@@ -13,6 +13,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         //start button
+        //btn_connect.isActivated = false
         btn_connect.setOnClickListener {
             val wifiConfig = WifiConfiguration()
             wifiConfig.SSID = java.lang.String.format("\"%s\"", "HevitraSensor")
@@ -72,6 +74,8 @@ class MainActivity : AppCompatActivity() {
         for (item in results) {
             if (item.SSID == "HevitraSensor"){
                 sensor_status_text.text = "A sensor has been found!"
+                btn_connect.isEnabled = true
+                btn_connect.isVisible = true
                 return
             }
         }
