@@ -42,7 +42,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         //start button
-        //btn_connect.isActivated = false
         btn_connect.setOnClickListener {
             val wifiConfig = WifiConfiguration()
             wifiConfig.SSID = java.lang.String.format("\"%s\"", "HevitraSensor")
