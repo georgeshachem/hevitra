@@ -25,11 +25,15 @@ class MainActivity : AppCompatActivity() {
     private val wifiScanReceiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
-            val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
-            if (success) {
-                scanSuccess()
-            } else {
-                scanFailure()
+            val action = intent.action
+
+            if (action.equals("android.net.wifi.SCAN_RESULTS")) {
+                val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
+                if (success) {
+                    scanSuccess()
+                } else {
+                    scanFailure()
+                }
             }
         }
     }
