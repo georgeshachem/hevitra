@@ -1,15 +1,17 @@
 package com.georgeshachem.hevitra
 
 import android.Manifest
-import android.R.attr.key
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,6 +21,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    val hevitra_wifi_ssid = String.format("\"%s\"", "HevitraSensor")
+    val hevitra_wifi_password = String.format("\"%s\"", "HevitraPassword")
+
     private val wifiManager: WifiManager
         get() = getSystemService(Context.WIFI_SERVICE) as WifiManager
 
@@ -27,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
 
-            if (action.equals("android.net.wifi.SCAN_RESULTS")) {
+            if (action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
                 val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
                 if (success) {
                     scanSuccess()
@@ -35,6 +40,20 @@ class MainActivity : AppCompatActivity() {
                     scanFailure()
                 }
             }
+            if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+                val netInfo: NetworkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO)
+                if (ConnectivityManager.TYPE_WIFI == netInfo.getType ()) {
+                    if (netInfo.isConnected ()){
+                        val wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
+                        val info = wifiManager.connectionInfo
+                        val ssid = info.ssid
+                        if ( ssid == hevitra_wifi_ssid ){
+                            sensor_status_text.text = "Connected to sensor"
+                        }
+                    }
+                }
+            }
+
         }
     }
 
@@ -48,8 +67,8 @@ class MainActivity : AppCompatActivity() {
         //start button
         btn_connect.setOnClickListener {
             val wifiConfig = WifiConfiguration()
-            wifiConfig.SSID = java.lang.String.format("\"%s\"", "HevitraSensor")
-            wifiConfig.preSharedKey = String.format("\"%s\"", "HevitraPassword")
+            wifiConfig.SSID = hevitra_wifi_ssid
+            wifiConfig.preSharedKey = hevitra_wifi_password
 
             val wifiManager =
                 getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -62,6 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         val intentFilter = IntentFilter()
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
         this.registerReceiver(wifiScanReceiver, intentFilter)
 
         val success = wifiManager.startScan()
